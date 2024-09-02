@@ -7,7 +7,7 @@ import { config as dotenvConfig } from "dotenv";
 import routes from "./routes.js";
 import cronScheduler from "./crons.js";
 import { corsFix } from "./middleware/corsFix.js";
-import registerGameHandlers from "./socketHandlers.js";
+import registerGameHandlers from "./socketHandlers/index.js";
 
 dotenvConfig();
 

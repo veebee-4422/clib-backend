@@ -1,10 +1,10 @@
 import { Router } from "express";
-import AdminController from "./controller.js";
+import { adminLogin } from "./controllers.js";
 
 export default function adminRoutes(){
     const router = Router();
-
-    const controller = new AdminController();
+    
+    router.get("/login", adminLogin);
 
     return router;
 };
