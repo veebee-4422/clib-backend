@@ -1,8 +1,11 @@
+
+import { Request, Response, NextFunction } from "express";
+
 import { BadRequestError } from "../utils/customErrors.js";
 import { sendSuccessResponse, sendFailureResponse } from "../utils/serverResponse.js";
 import { getUserSaltHash, generateSaltHash, createUser, checkPassword } from "./services.js";
 
-export async function registerUser(req, res, next) {
+export async function registerUser(req: Request, res: Response, next: NextFunction) {
 	try {
 		const userEmail = req.body.user_email;
 		const providedPassword = req.body.password;
@@ -22,7 +25,7 @@ export async function registerUser(req, res, next) {
 	}
 }
 
-export async function loginUser(req, res, next) {
+export async function loginUser(req: Request, res: Response, next: NextFunction) {
 	try {
 		const userEmail = req.body.user_email;
 		const providedPassword = req.body.password;

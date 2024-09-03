@@ -22,6 +22,7 @@ function getDirectory(dirCat, dirPath) {
 const uploadStorage = multer({
     storage: multer.diskStorage({
         destination: function (req, file, callback) {
+            if(typeof req.query.dirPath !== "string") return;
             const directory = getDirectory(req.query.dir || null, req.query.dirPath?.split("/") || []);
 
             callback(null, directory);

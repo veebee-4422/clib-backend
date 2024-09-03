@@ -1,11 +1,14 @@
-import pkg from "jsonwebtoken"
+import { Request, Response, NextFunction } from "express";
+
+// import pkg from "jsonwebtoken"
+import { sign as signToken, verify as verifyToken } from "jsonwebtoken"
 import { InternalServerError } from "../utils/customErrors.js";
 
-const { sign: signToken, verify: verifyToken } = pkg;
+// const { sign: signToken, verify: verifyToken } = pkg;
 
 const jwtSecret = process.env.JWTSECRET || "topsecret";
 
-function generateJwt(req, res, next) {
+function generateJwt(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = Number(req.headers.userId);
         if(!userId) throw new InternalServerError("User ID not found.");
@@ -35,8 +38,9 @@ function generateJwt(req, res, next) {
     }
 }
 
-function verifyJwt(req, res, next) {
+function verifyJwt(req: Request, res: Response, next: NextFunction) {
     try {
+        const userId = req.query.userId;
         const token = signToken({
                 userId: userId,
             },
@@ -46,7 +50,7 @@ function verifyJwt(req, res, next) {
 
         return token;
     } catch (error) {
-        throw new Error("generateJwt | Error generating token: ", error.message);
+        throw new Error("generateJwt | Error generating token: ");
     }
 }
 
