@@ -1,10 +1,12 @@
-import mysql from "mysql";
+import mysql, { PoolOptions } from "mysql2/promise";
 import { config as dotenvConfig } from "dotenv";
+
+
 
 dotenvConfig();
 
-const mainDbPoolConfig = {
-    connectionLimit: process.env.DB_CON_LIM,
+const mainDbPoolConfig: PoolOptions = {
+    connectionLimit: Number(process.env.DB_CON_LIM) | 10,
     database: process.env.DB_NAME,
     charset: "utf8mb4",
     host: process.env.MAIN_DB_HOST,
@@ -12,12 +14,12 @@ const mainDbPoolConfig = {
     password: process.env.MAIN_DB_PASS,
 }
 
-const localDbPoolConfig = {
-    connectionLimit: process.env.DB_CON_LIM,
+const localDbPoolConfig: PoolOptions = {
+    connectionLimit: Number(process.env.DB_CON_LIM) | 10,
     database: process.env.DB_NAME,
     charset: "utf8mb4",
     host: process.env.LOCAL_DB_HOST,
-    port: process.env.LOCAL_DB_PORT,
+    port: Number(process.env.LOCAL_DB_PORT) | 3306,
     user: process.env.LOCAL_DB_ID,
     password: process.env.LOCAL_DB_PASS,
 }

@@ -2,47 +2,18 @@ import { Request, Response, NextFunction } from "express";
 
 // import pkg from "jsonwebtoken"
 import { sign as signToken, verify as verifyToken } from "jsonwebtoken"
-import { InternalServerError } from "../utils/customErrors.js";
+import { InternalServerError, NoContentError } from "../utils/customErrors.js";
 
 // const { sign: signToken, verify: verifyToken } = pkg;
 
 const jwtSecret = process.env.JWTSECRET || "topsecret";
 
-function generateJwt(req: Request, res: Response, next: NextFunction) {
+export function generateJwt(userId: number) {
     try {
-        const userId = Number(req.headers.userId);
         if(!userId) throw new InternalServerError("User ID not found.");
 
         const token = signToken({
-                userId: userId,
-            },
-            jwtSecret,
-            { expiresIn: "30d" }
-        );
-
-        return res.status(200).send({
-            data: {
-                userId: userId,
-                token: token
-            },
-            error: null
-        });
-    } catch (error) {
-        const errorString = `generateJwt | Error generating token: ${error.message}`;
-        console.log(errorString);
-
-        return res.status(error.statusCode || 500).send({
-            data: null,
-            error: errorString
-        })
-    }
-}
-
-function verifyJwt(req: Request, res: Response, next: NextFunction) {
-    try {
-        const userId = req.query.userId;
-        const token = signToken({
-                userId: userId,
+                sub: userId,
             },
             jwtSecret,
             { expiresIn: "30d" }
@@ -50,7 +21,35 @@ function verifyJwt(req: Request, res: Response, next: NextFunction) {
 
         return token;
     } catch (error) {
-        throw new Error("generateJwt | Error generating token: ");
+        console.log(`generateJwt | Error generating token: ${error.message}`);
+
+        return null;
+    }
+}
+
+export async function authMiddleware(req:Request, res: Response, next: NextFunction){
+	try {
+		const token = (req.headers.authorization || req.query.token as string || " ").split(" ")[1];
+		if (!token) throw new NoContentError("No valid JSON Web Token provided.");
+
+		try {
+			const decoded = verifyToken(token, jwtSecret);
+			req.headers.userId = decoded.sub as string;
+		} catch (error) {
+			const errorMessage = error.message === "jwt expired" ? "JSON Web Token expired." : error.message;
+			throw new NoContentError(errorMessage);
+		}
+
+		return next();
+    } catch (error) {
+		console.log("authMiddleware", error.message);
+
+		return res.status(error.statusCode || 401).send({
+			status: "error",
+			code: error.statusCode || 401,
+			message: error.message,
+			data: null
+		});
     }
 }
 

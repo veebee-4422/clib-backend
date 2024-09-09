@@ -4,10 +4,11 @@ import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import { config as dotenvConfig } from "dotenv";
 
-import routes from "./routes.js";
-import cronScheduler from "./crons.js";
-import { corsFix } from "./middleware/corsFix.js";
-import registerGameHandlers from "./socketHandlers/index.js";
+import routes from "./routes";
+import cronScheduler from "./crons";
+import { corsFix } from "./middleware/corsFix";
+import { delayApi } from "./middleware/delayApi";
+import registerGameHandlers from "./socketHandlers";
 
 dotenvConfig();
 
@@ -28,8 +29,9 @@ io.on("connection", registerGameHandlers);
 
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(express());
 app.use(corsFix);
+app.use(delayApi);
 
 app.use(routes);
 

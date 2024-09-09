@@ -1,9 +1,10 @@
 
 import { Request, Response, NextFunction } from "express";
 
-import { BadRequestError } from "../utils/customErrors.js";
-import { sendSuccessResponse, sendFailureResponse } from "../utils/serverResponse.js";
-import { getUserSaltHash, generateSaltHash, createUser, checkPassword } from "./services.js";
+import { BadRequestError, InternalServerError } from "../utils/customErrors";
+import { sendSuccessResponse, sendFailureResponse } from "../utils/serverResponse";
+import { getUserSaltHash, generateSaltHash, createUser, checkPassword } from "./services";
+import { generateJwt } from "../middleware/jwtAuth";
 
 export async function registerUser(req: Request, res: Response, next: NextFunction) {
 	try {
@@ -15,9 +16,12 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
 
 		const { generatedSalt, generatedHash } = await generateSaltHash(providedPassword);
 
-		await createUser(userEmail, generatedHash, generatedSalt);
+		const insertInfo = await createUser(userEmail, generatedHash, generatedSalt);
 
-		return sendSuccessResponse(res, true);
+		const generatedJwt = generateJwt(insertInfo.insertId);
+		if (!generatedJwt) throw new InternalServerError("JWT generation failed.");
+
+		return sendSuccessResponse(res, { token: generatedJwt });
 	} catch (error) {
 		console.log("registerUser: ", error);
 
@@ -27,16 +31,19 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
 
 export async function loginUser(req: Request, res: Response, next: NextFunction) {
 	try {
-		const userEmail = req.body.user_email;
-		const providedPassword = req.body.password;
+		const userEmail = req.body.user_email as string;
+		const providedPassword = req.body.password as string;
 
 		const userInfo = await getUserSaltHash(userEmail);
 		if (!userInfo) throw new BadRequestError("An account with the provided UserId/Email does not exist.");
 
 		const correctPassword = await checkPassword(providedPassword, userInfo.user_hash, userInfo.user_salt);
-		if(!correctPassword) throw new BadRequestError("Incorrect credentials.");
+		if (!correctPassword) throw new BadRequestError("Incorrect credentials.");
 
-		return sendSuccessResponse(res, true);
+		const generatedJwt = generateJwt(userInfo.id);
+		if (!generatedJwt) throw new InternalServerError("JWT generation failed.");
+
+		return sendSuccessResponse(res, { token: generatedJwt });
 	} catch (error) {
 		console.log("loginUser: ", error);
 

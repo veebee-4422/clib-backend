@@ -1,8 +1,10 @@
+import { NextFunction, Request, Response } from "express";
+
 const allowedIps = ""
 
-export function checkSafeIp(ip){
+export function checkSafeIp(ip: string){
     try {
-        const thisIpArray = ip.split("."), allowedIpsArray = JSON.parse(allowedIps).map((element) => element.split("."));
+        const thisIpArray = ip.split("."), allowedIpsArray = JSON.parse(allowedIps).map((element: string) => element.split("."));
         if(thisIpArray.length !== 4) return false;
         for(let i=0; i<allowedIpsArray.length; i++){
             let flag = false;
@@ -19,22 +21,22 @@ export function checkSafeIp(ip){
     }
 }
 
-export function corsFix(req, res, next){
-    const ip = req.headers["x-forwarded-for"];
+export function corsFix(req:Request, res: Response, next: NextFunction){
+    // const ip = req.headers["x-forwarded-for"];
     // Website you wish to allow to connect
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // res.setHeader("Access-Control-Allow-Origin", "*");
     // if(checkSafeIp(ip)) res.setHeader("Access-Control-Allow-Origin", ip);
-    // res.setHeader("Access-Control-Allow-Origin", "http://3.110.186.202");
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
     // Request methods you wish to allow
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    // res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
     // Request headers you wish to allow
     // res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
-    res.setHeader("Access-Control-Allow-Headers", "*");
+    // res.setHeader("Access-Control-Allow-Headers", "*");
 
     // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
-    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Credentials", "false");
 
     // Pass to next layer of middleware
     return next();

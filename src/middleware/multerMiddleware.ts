@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 
-function getDirectory(dirCat, dirPath) {
+function getDirectory(dirCat: string | null, dirPath: string[]) {
     switch (dirCat) {
         case "fonts":
             return path.join(__dirname, "..", "..", "temp", "fonts");
@@ -22,7 +22,7 @@ function getDirectory(dirCat, dirPath) {
 const uploadStorage = multer({
     storage: multer.diskStorage({
         destination: function (req, file, callback) {
-            if(typeof req.query.dirPath !== "string") return;
+            if(typeof req.query.dirPath !== "string" || typeof req.query.dir !== "string") return;
             const directory = getDirectory(req.query.dir || null, req.query.dirPath?.split("/") || []);
 
             callback(null, directory);
